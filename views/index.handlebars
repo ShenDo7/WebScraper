@@ -1,0 +1,28 @@
+<h1>Crypto News</h1>
+
+<h2>Stay up to date!</h2>
+
+<ul>
+  {{#each articles}}
+  {{#unless saved}}
+  {{title}}
+  {{/unless}}
+  {{/each}}
+</ul>
+
+<h2>Cats that are sleepy!</h2>
+
+<ul>
+  {{#each cats}}
+  {{#if sleepy}}
+  {{> cats/cat-block sleep=false}}
+  {{/if}}
+  {{/each}}
+</ul>
+
+<div id="wrapper">
+  <h1>Note Scraper</h1>
+  <h2><i>If you can do this...the homework should be no problem.</i></h2>
+  <div id="articles"></div>
+  <div id="notes"></div>
+</div>
