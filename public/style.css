@@ -1,5 +1,5 @@
 body {
-  background-color: #f2f6d0;
+  background-color: ;
 }
 #wrapper {
   width: 960px;
@@ -10,7 +10,7 @@ body {
 #articles {
   display: inline-block;
   overflow: auto;
-  width: 60%;
+  width: 100%;
   height: 700px;
 }
 #notes {

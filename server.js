@@ -66,6 +66,26 @@ app.get("/scrape", function(req, res) {
   res.redirect("/");
 });
 
+app.get("/saved", function(req, res) {
+  Article.find({ saved: true }).then(data => {
+    res.render("saved", { saved: data });
+  });
+});
+
+app.post("/article/save/:id", function(req, res) {
+  console.log(req.params.id);
+  Article.findOneAndUpdate({ _id: req.params.id }, { saved: true }).then(
+    dbres => console.log(dbres)
+  );
+});
+
+app.post("/article/delete/:id", function(req, res) {
+  console.log(req.params.id);
+  Article.findOneAndUpdate({ _id: req.params.id }, { saved: false }).then(
+    dbres => console.log(dbres)
+  );
+});
+
 app.listen(PORT, function() {
   console.log(`App listening on port ${PORT}`);
 });

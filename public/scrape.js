@@ -79,3 +79,13 @@ $(document).on("click", "#savenote", function() {
   $("#titleinput").val("");
   $("#bodyinput").val("");
 });
+
+$(document).on("click", ".save", function() {
+  console.log($(this).attr("id"));
+  $.post("/article/save/" + $(this).attr("id"));
+});
+
+$(document).on("click", ".delete", function() {
+  console.log($(this).attr("id"));
+  $.post("/article/delete/" + $(this).attr("id"));
+});

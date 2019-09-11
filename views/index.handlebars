@@ -1,28 +1,47 @@
-<h1>Crypto News</h1>
+<div class="jumbotron text-center">
+  <div class="overlay">
+  </div>
+  <div class="background-image">
+  </div>
+  <div class="caption">
+    <h1>
+      <center>Crypto News</center>
+    </h1>
 
-<h2>Stay up to date!</h2>
+    <h2>
+      <center>Stay up to date!</center>
+    </h2>
+  </div>
+</div>
 
-<ul>
-  {{#each articles}}
-  {{#unless saved}}
-  {{title}}
-  {{/unless}}
-  {{/each}}
-</ul>
+<div id="articles">
+  <ul>
+    {{#each articles}}
+    <div class="container-fluid article-container">
+      <div class="card">
+        <div class="card-header row">
+          <div class="col-lg-10"><a class="article-link" target="_blank" rel="noopener noreferrer"
+              href={{url}}>{{title}}</a></div>
+          <div class="col-lg-2"><a id={{_id}} class="btn btn-success save">Save Article</a></div>
 
-<h2>Cats that are sleepy!</h2>
+        </div>
+      </div>
+    </div>
+    {{!-- {{#unless saved}} --}}
+    {{!-- {{/unless}} --}}
+    {{/each}}
+  </ul>
+  {{!-- 
+  <ul>
+    {{#each articles}}
+    {{#if saved}}
+    {{> articles/article-block saved=false}}
+    {{/if}}
+    {{/each}}
+  </ul> --}}
 
-<ul>
-  {{#each cats}}
-  {{#if sleepy}}
-  {{> cats/cat-block sleep=false}}
-  {{/if}}
-  {{/each}}
-</ul>
+</div>
 
-<div id="wrapper">
-  <h1>Note Scraper</h1>
-  <h2><i>If you can do this...the homework should be no problem.</i></h2>
-  <div id="articles"></div>
-  <div id="notes"></div>
+<div id="notes"></div>
+
 </div>
