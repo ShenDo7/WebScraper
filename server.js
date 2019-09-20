@@ -34,7 +34,7 @@ app.get("/", function(req, res) {
 
 app.get("/scrape", function(req, res) {
   axios
-    .get("http://www.cointelegraph.com")
+    .get("https://www.cointelegraph.com")
     .then(function(burrito) {
       var $ = cheerio.load(burrito.data);
       console.log("GETTING STUFF");
