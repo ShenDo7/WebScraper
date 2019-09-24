@@ -7,6 +7,7 @@ const mongoose = require("mongoose");
 const axios = require("axios");
 // var db = require("./models");
 const Article = require("./models/article.js");
+const Note = require("./models/note.js");
 
 const PORT = process.env.PORT || 3001;
 const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/scraper_db";
@@ -84,6 +85,32 @@ app.post("/article/delete/:id", function(req, res) {
   Article.findOneAndUpdate({ _id: req.params.id }, { saved: false }).then(
     dbres => console.log(dbres)
   );
+});
+
+app.get("/articles/:id", function(req, res) {
+  console.log(req.params.id);
+  Article.find({ _id: req.params.id }).then(data => res.json(data[0]));
+});
+
+app.post("/articles/:id", function(req, res) {
+  console.log(req.params.id);
+  Note.create(req.body)
+    .then(function(dbNote) {
+      console.log(dbNote._id);
+      return Article.findOneAndUpdate(
+        { _id: req.params.id },
+        { $push: { note: dbNote._id } },
+        { new: true }
+      );
+    })
+    .then(function(dbArticle) {
+      // If we were able to successfully update an Article, send it back to the client
+      res.json(dbArticle);
+    })
+    .catch(function(err) {
+      // If an error occurred, send it to the client
+      res.json(err);
+    });
 });
 
 app.listen(PORT, function() {

@@ -13,14 +13,14 @@
     </h2>
   </div>
 </div>
-
+<div id="notes"></div>
 <div id="articles">
   <ul>
     {{#each articles}}
     <div class="container-fluid article-container">
       <div class="card">
         <div class="card-header row">
-          <div class="col-lg-10"><a class="article-link" target="_blank" rel="noopener noreferrer"
+          <div class="col-lg-10" id={{_id}}><a class="article-link" target="_blank" rel="noopener noreferrer"
               href={{url}}>{{title}}</a></div>
           <div class="col-lg-2"><a id={{_id}} class="btn btn-success save">Save Article</a></div>
 
@@ -42,6 +42,6 @@
 
 </div>
 
-<div id="notes"></div>
+
 
 </div>

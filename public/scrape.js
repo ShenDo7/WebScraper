@@ -16,12 +16,12 @@ $.getJSON("/articles", function(data) {
 });
 
 // Whenever someone clicks a p tag
-$(document).on("click", "p", function() {
+$(document).on("click", ".col-lg-10", function() {
   // Empty the notes from the note section
   $("#notes").empty();
   // Save the id from the p tag
-  var thisId = $(this).attr("data-id");
-
+  var thisId = $(this).attr("id");
+  console.log(thisId);
   // Now make an ajax call for the Article
   $.ajax({
     method: "GET",
@@ -42,7 +42,7 @@ $(document).on("click", "p", function() {
       );
 
       // If there's a note in the article
-      if (data.note) {
+      if (data.notes) {
         // Place the title of the note in the title input
         $("#titleinput").val(data.note.title);
         // Place the body of the note in the body textarea
