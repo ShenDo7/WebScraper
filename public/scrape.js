@@ -53,6 +53,11 @@ $(document).on("click", ".col-lg-10", function() {
           // Place the body of the note in the body textarea
           $("#bodyinput").val(data[0].body);
         });
+        <div class="col-lg-2">
+          <a id={{ notes }} class="btn btn-success delete">
+            Delete Note
+          </a>
+        </div>;
       }
 
       // When you click the savenote button
