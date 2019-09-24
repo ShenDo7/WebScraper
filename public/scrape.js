@@ -41,15 +41,19 @@ $(document).on("click", ".col-lg-10", function() {
         "<button data-id='" + data._id + "' id='savenote'>Save Note</button>"
       );
 
-      // If there's a note in the article
-      if (data.notes) {
-        // Place the title of the note in the title input
-        $("#titleinput").val(data.note.title);
-        // Place the body of the note in the body textarea
-        $("#bodyinput").val(data.note.body);
+       // If there's a note in the article
+       if (data.notes.length) {
+        console.log("HAS A NOTE!");
+        $.ajax({
+          method: "GET",
+          url: "/note/" + data.notes[data.notes.length - 1]
+        }).then(data => {
+          // Place the title of the note in the title input
+          $("#titleinput").val(data[0].title);
+          // Place the body of the note in the body textarea
+          $("#bodyinput").val(data[0].body);
+        });
       }
-    });
-});
 
 // When you click the savenote button
 $(document).on("click", "#savenote", function() {

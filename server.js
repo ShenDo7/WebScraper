@@ -73,6 +73,11 @@ app.get("/saved", function(req, res) {
   });
 });
 
+app.get("/note/:id", function(req, res) {
+  console.log(req.params.id);
+  Note.find({ _id: req.params.id }).then(data => res.json(data));
+});
+
 app.post("/article/save/:id", function(req, res) {
   console.log(req.params.id);
   Article.findOneAndUpdate({ _id: req.params.id }, { saved: true }).then(
