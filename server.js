@@ -97,6 +97,15 @@ app.get("/articles/:id", function(req, res) {
   Article.find({ _id: req.params.id }).then(data => res.json(data[0]));
 });
 
+app.post("/note/delete/:id", function(req, res) {
+  console.log(req.params.id);
+  Article.findOneAndUpdate({ _id: req.params.id }, { notes: [] }).then(
+    article => {
+      res.json(article);
+    }
+  );
+});
+
 app.post("/articles/:id", function(req, res) {
   console.log(req.params.id);
   Note.create(req.body)
