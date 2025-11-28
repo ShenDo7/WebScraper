@@ -1,132 +1,174 @@
 // Dependencies
 const cheerio = require("cheerio");
 const express = require("express");
-const expressHandlebars = require("express-handlebars");
+const { engine } = require("express-handlebars");
 const mongoose = require("mongoose");
-// const logger = require("morgan");
 const axios = require("axios");
-// var db = require("./models");
 const Article = require("./models/article.js");
 const Note = require("./models/note.js");
 
 const PORT = process.env.PORT || 3001;
 const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/scraper_db";
 
-// initialize mongodb
-mongoose.connect(MONGODB_URI, { useNewUrlParser: true });
+// Initialize MongoDB
+mongoose.connect(MONGODB_URI)
+  .then(() => console.log("MongoDB connected successfully"))
+  .catch(err => console.error("MongoDB connection error:", err));
+
 // Initialize Express
-let app = express();
+const app = express();
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
 // Make public a static folder
 app.use(express.static("public"));
 
-var exphbs = require("express-handlebars");
-app.engine("handlebars", exphbs({ defaultLayout: "main" }));
+// Set up Handlebars
+app.engine("handlebars", engine({ defaultLayout: "main" }));
 app.set("view engine", "handlebars");
+app.set("views", "./views");
 
-app.get("/", function(req, res) {
-  Article.find({}).then(function(articledb) {
-    console.log(articledb);
-    res.render("index", { articles: articledb });
-  });
+// Routes
+app.get("/", async (req, res) => {
+  try {
+    const articles = await Article.find({});
+    res.render("index", { articles });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error fetching articles");
+  }
 });
 
-app.get("/scrape", function(req, res) {
-  axios
-    .get("https://www.cointelegraph.com")
-    .then(function(burrito) {
-      var $ = cheerio.load(burrito.data);
-      console.log("GETTING STUFF");
-      $("article").each(function(i, element) {
-        var title = $(this)
-          .children(".post-preview-item-card__text-wrp")
-          .children("p")
-          .text();
-        var url = $(this)
-          .children("a")
-          .attr("href");
+app.get("/scrape", async (req, res) => {
+  try {
+    const response = await axios.get("https://www.cointelegraph.com");
+    const $ = cheerio.load(response.data);
+    
+    console.log("Scraping articles...");
+    
+    const articles = [];
+    $("article").each(function (i, element) {
+      const title = $(this)
+        .children(".post-preview-item-card__text-wrp")
+        .children("p")
+        .text();
+      const url = $(this)
+        .children("a")
+        .attr("href");
 
-        var result = {
-          title: title,
-          url: url
-        };
-        console.log(title, url);
-        Article.create(result).then(function(articledb) {
-          console.log(articledb);
-        });
-      });
-    })
-    .catch(err => {
-      {
-        throw err;
-        console.log(err);
+      if (title && url) {
+        articles.push({ title, url });
       }
     });
-  res.redirect("/");
-});
 
-app.get("/saved", function(req, res) {
-  Article.find({ saved: true }).then(data => {
-    res.render("saved", { saved: data });
-  });
-});
-
-app.get("/note/:id", function(req, res) {
-  console.log(req.params.id);
-  Note.find({ _id: req.params.id }).then(data => res.json(data));
-});
-
-app.post("/article/save/:id", function(req, res) {
-  console.log(req.params.id);
-  Article.findOneAndUpdate({ _id: req.params.id }, { saved: true }).then(
-    dbres => console.log(dbres)
-  );
-});
-
-app.post("/article/delete/:id", function(req, res) {
-  console.log(req.params.id);
-  Article.findOneAndUpdate({ _id: req.params.id }, { saved: false }).then(
-    dbres => console.log(dbres)
-  );
-});
-
-app.get("/articles/:id", function(req, res) {
-  console.log(req.params.id);
-  Article.find({ _id: req.params.id }).then(data => res.json(data[0]));
-});
-
-app.post("/note/delete/:id", function(req, res) {
-  console.log(req.params.id);
-  Article.findOneAndUpdate({ _id: req.params.id }, { notes: [] }).then(
-    article => {
-      res.json(article);
+    // Save articles to database
+    for (const article of articles) {
+      try {
+        await Article.create(article);
+        console.log("Saved:", article.title);
+      } catch (err) {
+        // Skip duplicates or errors
+        if (err.code !== 11000) {
+          console.error("Error saving article:", err.message);
+        }
+      }
     }
-  );
+
+    res.redirect("/");
+  } catch (err) {
+    console.error("Scrape error:", err);
+    res.status(500).send("Error scraping articles");
+  }
 });
 
-app.post("/articles/:id", function(req, res) {
-  console.log(req.params.id);
-  Note.create(req.body)
-    .then(function(dbNote) {
-      console.log(dbNote._id);
-      return Article.findOneAndUpdate(
-        { _id: req.params.id },
-        { $push: { note: dbNote._id } },
-        { new: true }
-      );
-    })
-    .then(function(dbArticle) {
-      // If we were able to successfully update an Article, send it back to the client
-      res.json(dbArticle);
-    })
-    .catch(function(err) {
-      // If an error occurred, send it to the client
-      res.json(err);
-    });
+app.get("/saved", async (req, res) => {
+  try {
+    const saved = await Article.find({ saved: true });
+    res.render("saved", { saved });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error fetching saved articles");
+  }
 });
 
-app.listen(PORT, function() {
+app.get("/note/:id", async (req, res) => {
+  try {
+    const note = await Note.findById(req.params.id);
+    res.json(note);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error fetching note" });
+  }
+});
+
+app.post("/article/save/:id", async (req, res) => {
+  try {
+    const article = await Article.findByIdAndUpdate(
+      req.params.id,
+      { saved: true },
+      { new: true }
+    );
+    res.json(article);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error saving article" });
+  }
+});
+
+app.post("/article/delete/:id", async (req, res) => {
+  try {
+    const article = await Article.findByIdAndUpdate(
+      req.params.id,
+      { saved: false },
+      { new: true }
+    );
+    res.json(article);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error removing article" });
+  }
+});
+
+app.get("/articles/:id", async (req, res) => {
+  try {
+    const article = await Article.findById(req.params.id);
+    res.json(article);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error fetching article" });
+  }
+});
+
+app.post("/note/delete/:id", async (req, res) => {
+  try {
+    const article = await Article.findByIdAndUpdate(
+      req.params.id,
+      { notes: [] },
+      { new: true }
+    );
+    res.json(article);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error deleting notes" });
+  }
+});
+
+app.post("/articles/:id", async (req, res) => {
+  try {
+    const note = await Note.create(req.body);
+    const article = await Article.findByIdAndUpdate(
+      req.params.id,
+      { $push: { note: note._id } },
+      { new: true }
+    );
+    res.json(article);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error adding note" });
+  }
+});
+
+app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
 });
